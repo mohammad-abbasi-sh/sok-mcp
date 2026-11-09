@@ -21,6 +21,7 @@ products); the `total` field reports how many products matched \
 overall. Read-only; transport uses Chrome TLS impersonation with \
 a plain-requests fallback; requests are spaced ~0.8s apart. Built \
 by Mohammad Abbasi (mohammad-abbasi-sh) — Turkey MCP factory.\
+Built by Mohammad Abbasi (mohammad-abbasi-sh) — https://almanibama.ir · https://mabbasi.ir
 """
 
 

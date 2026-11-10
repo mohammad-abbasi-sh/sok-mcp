@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 
 from mcp.server.fastmcp import FastMCP
 
@@ -25,8 +26,24 @@ Built by Mohammad Abbasi (mohammad-abbasi-sh) — https://almanibama.ir · https
 """
 
 
+_SOURCE = "sokmarket.com.tr"
+_DISCLAIMER = "Unofficial read-only data from sokmarket.com.tr; verify on the site before acting on it."
+
+
+def _envelope() -> dict:
+    return {
+        "fetched_at": datetime.now(timezone.utc).isoformat(),
+        "source": _SOURCE,
+        "disclaimer": _DISCLAIMER,
+    }
+
+
+def _ok(payload: dict) -> str:
+    return json.dumps({**_envelope(), **payload}, ensure_ascii=False)
+
+
 def _err(e: Exception) -> str:
-    return json.dumps({"error": str(e)}, ensure_ascii=False)
+    return _ok({"error": str(e)})
 
 
 def _validate_limit(limit: int, lo: int = 1, hi: int = 30) -> int:
@@ -49,7 +66,7 @@ def sok_search_products(query: str, limit: int = 20) -> str:
     except (ValueError, _http.SokError) as e:
         return _err(e)
     res["products"] = res["products"][:limit]
-    return json.dumps({"query": query.strip(), **res}, ensure_ascii=False)
+    return _ok({"query": query.strip(), **res})
 
 
 @mcp.tool()
@@ -64,7 +81,7 @@ def sok_get_product(slug_or_url: str) -> str:
         page = _P.parse_product_page(_http.fetch_product(s))
     except (ValueError, _http.SokError) as e:
         return _err(e)
-    return json.dumps({"url": slug_or_url.strip(), **page}, ensure_ascii=False)
+    return _ok({"url": slug_or_url.strip(), **page})
 
 
 @mcp.tool()
@@ -74,7 +91,7 @@ def sok_list_categories() -> str:
         cats = _P.parse_categories(_http.fetch_home())
     except (ValueError, _http.SokError) as e:
         return _err(e)
-    return json.dumps({"count": len(cats), "categories": cats}, ensure_ascii=False)
+    return _ok({"count": len(cats), "categories": cats})
 
 
 @mcp.tool()
@@ -90,7 +107,7 @@ def sok_category_products(category: str, limit: int = 20) -> str:
     except (ValueError, _http.SokError) as e:
         return _err(e)
     res["products"] = res["products"][:limit]
-    return json.dumps({"category": category.strip(), **res}, ensure_ascii=False)
+    return _ok({"category": category.strip(), **res})
 
 
 @mcp.tool()
@@ -101,7 +118,7 @@ def sok_list_promotions() -> str:
         promos = _P.parse_promotions(_http.fetch_campaigns())
     except (ValueError, _http.SokError) as e:
         return _err(e)
-    return json.dumps({"count": len(promos), "promotions": promos}, ensure_ascii=False)
+    return _ok({"count": len(promos), "promotions": promos})
 
 
 @mcp.tool()
@@ -115,10 +132,17 @@ def sok_price_stats(query: str) -> str:
         stats = _P.price_stats(res["products"])
     except (ValueError, _http.SokError) as e:
         return _err(e)
-    return json.dumps(
-        {"query": query.strip(), "total_matches": res["total"], **stats},
-        ensure_ascii=False,
-    )
+    return _ok({"query": query.strip(), "total_matches": res["total"], **stats})
+
+
+@mcp.tool()
+def sok_health() -> str:
+    """Check whether sokmarket.com.tr is reachable right now.
+
+    Returns status ok (HTTP 200), blocked (HTTP 403/429 — bot wall or
+    rate limit) or error, plus the HTTP status and the probed URL.
+    One polite request; it does not fetch any listings."""
+    return _ok(_http.health_check())
 
 
 def main() -> None:

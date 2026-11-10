@@ -15,7 +15,7 @@ Add to your MCP client config (stdio):
   "mcpServers": {
     "sok": {
       "command": "uvx",
-      "args": ["sok-mcp"]
+      "args": ["sok-mcp==0.1.0"]
     }
   }
 }

@@ -13,7 +13,7 @@ MCP istemcinize ekleyin (stdio):
   "mcpServers": {
     "sok": {
       "command": "uvx",
-      "args": ["sok-mcp"]
+      "args": ["sok-mcp==0.1.0"]
     }
   }
 }
